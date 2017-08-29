@@ -1,6 +1,7 @@
 Heartworm App
 =============
 
+Reminder for heartworm medication.
 Blink after 30 days. Single button press turns off blink, button hold resets
 timer.
 
