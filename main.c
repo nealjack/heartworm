@@ -124,7 +124,11 @@ int main(void) {
 
     // LED config
     led_sb_init_params_t sb_config = LED_SB_INIT_DEFAULT_PARAMS(1 << LED);
-    sb_config.on_time_ticks = 1000;
+    sb_config.on_time_ticks   = APP_TIMER_TICKS(100, APP_TIMER_PRESCALER);
+    sb_config.off_time_ticks  = APP_TIMER_TICKS(100, APP_TIMER_PRESCALER);
+    sb_config.duty_cycle_max  = 255;
+    sb_config.duty_cycle_min  = 0;
+    sb_config.duty_cycle_step = 255;
 
     led_softblink_init(&sb_config);
 
