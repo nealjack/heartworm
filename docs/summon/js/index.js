@@ -61,16 +61,15 @@ var app = {
     },
     // BLE Device Discovered Callback
     onDiscover: function(device) {
-        app.log(device.id);
         if (device.id == deviceId) {
             app.log("Found " + deviceName + " (" + deviceId + ")!");
             app.onParseAdvData(device);
         } else {
-            //app.log('Not Blink (' + device.id + ')');
+            app.log('Not Blink (' + device.id + ')');
 
             // HACK:
-            //bluetooth.stopScan();
-            //bluetooth.startScan([], app.onDiscover, app.onAppReady);
+            bluetooth.stopScan();
+            bluetooth.startScan([], app.onDiscover, app.onAppReady);
         }
     },
    onParseAdvData: function(device){
