@@ -14,6 +14,8 @@
 #include "simple_adv.h"
 #include "multi_adv.h"
 
+#define PHYSWEB_URL     "j2x.us/heart"
+
 // Need pin number for LED
 #define LED 24
 #define USE_LED 1
@@ -21,11 +23,31 @@
 // Interrupt pin number
 #define BUTTON_PIN 25
 
-#define DEVICE_NAME "squall+heartworm"
+#define DEVICE_NAME "Heartworm"
 
-// Need this for 15 day timer
-//#define ONE_MINUTE APP_TIMER_TICKS(10368000, APP_TIMER_PRESCALER)
-//#define ONE_SECOND APP_TIMER_TICKS(8, 4095)
+#include "simple_ble.h"
+
+static ble_advdata_manuf_data_t adv_data = {
+  .company_identifier = 0x02e0,
+  .data = {0},
+};
+
+// Intervals for advertising and connections
+static simple_ble_config_t ble_config = {
+        // c0:98:e5:45:xx:xx
+        .platform_id       = 0xff,    // used as 4th octect in device BLE address
+        .device_id         = 0x0101,
+        .adv_name          = DEVICE_NAME,
+        .adv_interval      = MSEC_TO_UNITS(5000, UNIT_0_625_MS),
+        .min_conn_interval = MSEC_TO_UNITS(500, UNIT_1_25_MS),
+        .max_conn_interval = MSEC_TO_UNITS(1000, UNIT_1_25_MS),
+};
+
+/*******************************************************************************
+ *   State for this application
+ ******************************************************************************/
+// Main application state
+simple_ble_app_t* simple_ble_app;
 
 // Define our one-minute timeout timer
 APP_TIMER_DEF(timer0);
@@ -68,6 +90,17 @@ void button_handler(uint8_t pin, uint8_t button_action) {
     }
 }
 
+//static void adv_config_eddystone () {
+//    eddystone_adv(PHYSWEB_URL, NULL);
+//}
+//
+//static void adv_config_data () {
+//    uint8_t data[3] = {29 - time.days, 23 - time.hours, 59 - time.mins};
+//    adv_data.data.size = sizeof(data);
+//    adv_data.data.p_data = data;
+//    simple_adv_manuf_data(&adv_data);
+//}
+
 void timer0_timeout_handler(void* p_context) {
     if (state == WAIT)  {
       if (time.mins < 60) {
@@ -100,8 +133,20 @@ void timer1_timeout_handler(void* p_context) {
 int main(void) {
     // Initialize.
 
-    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_RC_250_PPM_8000MS_CALIBRATION,
-            false);
+    // Setup BLE
+    simple_ble_app = simple_ble_init(&ble_config);
+
+    // Need to init multi adv
+    //multi_adv_init(ADV_SWITCH_MS);
+
+    // Now register our advertisement configure functions
+    //multi_adv_register_config(adv_config_eddystone);
+    //multi_adv_register_config(adv_config_data);
+
+    //multi_adv_start();
+
+    //SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_RC_250_PPM_8000MS_CALIBRATION,
+            //false);
 
     APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, false);
 
@@ -138,6 +183,14 @@ int main(void) {
     // Enter main loop.
     while (1) {
         switch (state) {
+          case WAIT:
+            {
+              uint8_t data[3] = {29 - time.days, 23 - time.hours, 59 - time.mins};
+              adv_data.data.size = sizeof(data);
+              adv_data.data.p_data = data;
+              simple_adv_manuf_data(&adv_data);
+              break;
+            }
           case RESET:
             for(int i = 0; i < 4; i++) {
               led_toggle(LED);
