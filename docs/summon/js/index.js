@@ -61,6 +61,7 @@ var app = {
     },
     // BLE Device Discovered Callback
     onDiscover: function(device) {
+        app.log(device.id);
         if (device.id == deviceId) {
             app.log("Found " + deviceName + " (" + deviceId + ")!");
             app.onParseAdvData(device);
