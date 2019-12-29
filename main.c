@@ -23,7 +23,9 @@
 // Interrupt pin number
 #define BUTTON_PIN 25
 
-#define DEVICE_NAME "Heartworm"
+#define DEVICE_NAME "heartworm"
+#define PHYSWEB_URL     "j2x.us/heart"
+#define ADV_SWITCH_MS 5000
 
 #include "simple_ble.h"
 
@@ -90,16 +92,16 @@ void button_handler(uint8_t pin, uint8_t button_action) {
     }
 }
 
-//static void adv_config_eddystone () {
-//    eddystone_adv(PHYSWEB_URL, NULL);
-//}
-//
-//static void adv_config_data () {
-//    uint8_t data[3] = {29 - time.days, 23 - time.hours, 59 - time.mins};
-//    adv_data.data.size = sizeof(data);
-//    adv_data.data.p_data = data;
-//    simple_adv_manuf_data(&adv_data);
-//}
+static void adv_config_eddystone () {
+    eddystone_adv(PHYSWEB_URL, NULL);
+}
+
+static void adv_config_data () {
+    uint8_t data[3] = {29 - time.days, 23 - time.hours, 59 - time.mins};
+    adv_data.data.size = sizeof(data);
+    adv_data.data.p_data = data;
+    simple_adv_manuf_data(&adv_data);
+}
 
 void timer0_timeout_handler(void* p_context) {
     if (state == WAIT)  {
@@ -137,13 +139,11 @@ int main(void) {
     simple_ble_app = simple_ble_init(&ble_config);
 
     // Need to init multi adv
-    //multi_adv_init(ADV_SWITCH_MS);
+    multi_adv_init(ADV_SWITCH_MS);
 
     // Now register our advertisement configure functions
-    //multi_adv_register_config(adv_config_eddystone);
-    //multi_adv_register_config(adv_config_data);
-
-    //multi_adv_start();
+    multi_adv_register_config(adv_config_eddystone);
+    multi_adv_register_config(adv_config_data);
 
     //SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_RC_250_PPM_8000MS_CALIBRATION,
             //false);
@@ -177,20 +177,11 @@ int main(void) {
 
     led_softblink_init(&sb_config);
 
-    // Enable internal DC-DC converter to save power
-    // sd_power_dcdc_mode_set(NRF_POWER_DCDC_ENABLE);
+    multi_adv_start();
 
     // Enter main loop.
     while (1) {
         switch (state) {
-          case WAIT:
-            {
-              uint8_t data[3] = {29 - time.days, 23 - time.hours, 59 - time.mins};
-              adv_data.data.size = sizeof(data);
-              adv_data.data.p_data = data;
-              simple_adv_manuf_data(&adv_data);
-              break;
-            }
           case RESET:
             for(int i = 0; i < 4; i++) {
               led_toggle(LED);
