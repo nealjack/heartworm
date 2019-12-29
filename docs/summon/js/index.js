@@ -69,8 +69,8 @@ var app = {
             //app.log('Not Blink (' + device.id + ')');
 
             // HACK:
-            bluetooth.stopScan();
-            bluetooth.startScan([], app.onDiscover, app.onAppReady);
+            //bluetooth.stopScan();
+            //bluetooth.startScan([], app.onDiscover, app.onAppReady);
         }
     },
    onParseAdvData: function(device){
